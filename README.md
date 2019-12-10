@@ -5,7 +5,7 @@
 在根目录`package.json`中,配置`egg.framework`  
 ```
   "egg": {
-    "framework": "@jv2/jv-egg-framework"
+    "framework": "jm-egg-framework"
   }
 ```  
 配置完成项目之后,安装依赖  
@@ -48,7 +48,7 @@ cd app/config
 ```  
 增加对应的配置，如增加`config.keys`的配置
 ```
-config.keys = 'jv-egg-framework-keys'
+config.keys = 'jm-egg-framework-keys'
 ```
 
 ### framework/plugin插件扩展配置

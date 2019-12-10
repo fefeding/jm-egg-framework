@@ -6,7 +6,7 @@ const path = require('path');
 module.exports = appInfo => {
   const config = {};
 
-  config.keys = 'jv-egg-framework-keys';
+  config.keys = 'jm-egg-framework-keys';
 
   /**
    * some description
