@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "egg": "^2.0.0",
+    "egg-cache": "0.0.6"
+  },
+  "deprecated": false,
+  "devDependencies": {
+    "egg-bin": "^4.3.5",
+    "egg-mock": "^3.13.1"
+  },
+  "engines": {
+    "node": ">=8.9.0"
+  },
+  "name": "jm-egg-framework",
+  "scripts": {
+    "test": "egg-bin test"
+  },
+  "version": "1.0.1"
+}
