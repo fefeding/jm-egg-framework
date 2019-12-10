@@ -19,7 +19,7 @@
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
   },
   "dependencies": {
-    "jm-egg-framework": "latest",
+    "jm-egg-framework": "../",
     "@types/egg": "^1.5.0",
     "axios": "^0.18.1",
     "egg": "^2.3.0",

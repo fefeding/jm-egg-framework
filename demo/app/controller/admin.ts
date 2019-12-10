@@ -1,8 +1,9 @@
 
 import { Context, Controller } from 'egg';
-import decorators from "../lib/decorator";
 import Article from '../model/session';
 import configDefault from '../../config/config.default';
+
+import { decorators } from 'jm-egg-framework';
 
 export default class AdminController extends Controller {
 

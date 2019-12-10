@@ -50,23 +50,37 @@ module.exports =  {
             // 配置了启用鉴权
             const options = this.ctx.app.config.apiAccess;
             if (!options || !options.enabled) {
+                console.log('未配置 apiAccess 跳过api token校验');
                 return true;
             }
             
-            let token = this.ctx.request.header.jmtoken || ctx.request.query.jmtoken;
+            let token = this.ctx.request.header.jmtoken || this.ctx.request.query.jmtoken;
             if (!token && this.ctx.request.body && this.ctx.request.body.jmtoken) {
-                this.token = this.ctx.request.body.jmtoken;
+                token = this.ctx.request.body.jmtoken;
             }
 
             let timestamp = this.ctx.request.header.jmtimestamp || this.ctx.request.query.jmtimestamp;
             if (!timestamp && this.ctx.request.body && this.ctx.request.body.jmtimestamp) {
                 timestamp = this.ctx.request.body.jmtimestamp;
             }
+
+            // 如果配置了超时，则判断是否超时
+            if(timestamp && options.timeout) {
+                const timeout = options.timeout || 300000;
+                if(Date.now() - timestamp > timeout) {
+                    throw {
+                        ret: 1003,
+                        msg: `timestamp ${timestamp} 已超时`
+                    };
+                }
+            }
+
             const result = this.createApiToken(options.accessKey, timestamp);
+            
             if (token !== result.sign) {
                 console.log('access signature check fail');
                 console.log(`request sign: ${token}`);
-                console.log(`computed sign: ${result.sign}`);
+                console.log('computed sign: ', result);
                 return false;
             }
         }

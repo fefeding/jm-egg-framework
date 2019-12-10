@@ -18,7 +18,7 @@ export default class WXService extends Service {
         const config = this.config.jv;
         appid = appid || config.appId;
         let cacheKey = `wx/access_token/${appid}`;
-        let data = this.app.cache.get(cacheKey);
+        let data = await this.app.cache.get(cacheKey);
         // 还有有效期内，则直接返回
         if(data && data.timeout && Date.now() < data.timeout) {
             return data.access_token; 

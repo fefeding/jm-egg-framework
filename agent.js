@@ -1,11 +1,11 @@
 module.exports = app => {
   app.beforeStart(async () => {
-    console.log('beforeStart')
+    console.log('jm-egg-framework', 'agent beforeStart')
   });
   app.ready(async () => {
-    console.log('ready')
+    console.log('jm-egg-framework', 'agent ready')
   });
   app.beforeClose(async () => {
-    console.log('beforeClose')
+    console.log('jm-egg-framework', 'agent beforeClose')
   });
 };

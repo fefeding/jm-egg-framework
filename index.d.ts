@@ -188,6 +188,13 @@ declare module 'egg' {
     }
 }
 
+declare module 'jm-egg-framework' {
+    /**
+     * 通用装饰器
+     */
+    export const decorators: apiDecorators
+}
+
 /**
  * api 返回数据标准结构
  */

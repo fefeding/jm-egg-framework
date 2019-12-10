@@ -46,9 +46,18 @@ module.exports = appInfo => {
   config.security = {
     csrf: {
       ignore: ctx => {
-        return false; // 返回true就表示不需要检查csrf
+        const needLogin = ctx.checkNeedLogin();
+        return needLogin === false; // 返回true就表示不需要检查csrf
     }
     }
+  }
+
+  // 中间件access配置
+  // 用来请求鉴权  只需要针对/api/ 这类的service请求
+  // 计算方法 md5(accessKey + ',' + timestamp)
+  config.apiAccess = {
+    enabled: true, // false 表示不启用鉴权
+    accessKey: 'jm.20191119' // 用来计算token的当前系统唯一key
   }
 
   return config;
