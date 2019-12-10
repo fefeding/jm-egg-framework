@@ -120,5 +120,59 @@ module.exports =  {
       opt = Object.assign(cookieOpt, opt||{});
       
       this.cookies.set(name, value, opt);
-  }
+  },
+
+  /**
+   * 获取api请求信息
+   * 包括路径和方法名
+   */
+  getApiInfo() {
+      if(this.apiRequestPath) return this.apiRequestPath;
+
+      this.apiRequestPath = {
+          method: '',
+          path: '',
+          pathArray: [],
+          controller: null
+      };
+
+      // 只处理api请求
+      if(!/^\/api\//i.test(this.request.path)) {
+          return this.apiRequestPath;
+      }
+      // console.log('resolve ', this.request.path);
+      // 标记为api请求
+      this.isApi = true;
+
+      // api开头只是代理，真正访问的是后面
+      this.apiRequestPath.path = this.request.path.replace(/^\/api\//i, '').replace(/\/([^\/]+)$/, '');
+      this.apiRequestPath.method = RegExp.$1; // 这里截取的是方法名
+      this.apiRequestPath.pathArray = this.apiRequestPath.path.split('/');
+      
+      const controllerClass = require(`${this.app.baseDir}/app/controller/${this.apiRequestPath.path}`);
+      this.apiRequestPath.controller = new (controllerClass.default || controllerClass)(this);
+      return this.apiRequestPath;
+  },
+
+  /**
+  * 检查当前api请求是否需要校验登录
+  */
+ checkNeedLogin() {
+     if(typeof this.needLogin != 'undefined') return this.needLogin;
+
+     // 如果指定了静态文件，则跳过检查
+     const staticConfig = this.app.config.static || {};
+     if(staticConfig.prefix) {
+         if(this.request.url.indexOf(staticConfig.prefix) === 0) {
+             return this.needLogin = false;
+         }
+     }
+
+     const apiInfo = this.getApiInfo();
+     // 没有解析到api信息，则不处理
+     if(!apiInfo || !apiInfo.controller || !apiInfo.method) return true;
+     // 只有标记了不需要检查登录的，才跳过
+     const isCheck = this.helper.decorators.getApiLogin(apiInfo.controller, apiInfo.method);
+     return this.needLogin = (isCheck === false? false : true);
+ },
 };
