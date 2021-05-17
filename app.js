@@ -11,7 +11,7 @@ module.exports = app => {
         
     //}
 
-    app.config.coreMiddleware.push('jmApi');
+    //app.config.coreMiddleware.push('jmApi');
 
     console.log(app.config.coreMiddleware);
 };
