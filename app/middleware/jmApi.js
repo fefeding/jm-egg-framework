@@ -1,11 +1,10 @@
-import { Context } from 'egg';
 
 /**
  * api请求拦截中间件
  */
 export default () => {
     // const skipExt = [ '.png', '.jpeg', '.jpg', '.ico', '.gif' ];
-    return async function(ctx: Context, next: any) {
+    return async function(ctx, next) {
         // 如果api请求，则走特殊逻辑
         //console.log(ctx.isApi);
         if (ctx.isApi) {
