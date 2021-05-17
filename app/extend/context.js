@@ -231,7 +231,7 @@ module.exports =  {
             msg: '',
         };
         try {
-            const config = this.app.config.jvCommon || {};
+            const config = this.app.config.common || {};
             const apiInfo = this.getApiInfo();
 
             // 分割请求路径，最后为方法名
