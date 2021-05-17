@@ -251,9 +251,7 @@ module.exports =  {
 
             // 检查是否需要校验token
             // 如果需要但失败，会返回false
-            let tokenChecked = this.helper.checkApiToken(this, apiInfo.controller, apiInfo.method);
-            // 检验权限是否通过api允许
-            const permissionChecked = await this.helper.checkApiPermission(this, apiInfo.controller, apiInfo.method);
+            let tokenChecked = this.helper.checkApiToken(this, apiInfo.controller, apiInfo.method);            
             if (config.skipLoginCheck) {
                 tokenChecked = true;
             }
@@ -261,10 +259,6 @@ module.exports =  {
             if (tokenChecked === false) {
                 result.ret = 10002;
                 result.msg = 'check token fail';
-                this.status = 403;
-            } else if (permissionChecked === false) {
-                result.ret = 10003;
-                result.msg = 'permission deny';
                 this.status = 403;
             } else {
                 // 收集请求参数，get post都支持

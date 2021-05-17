@@ -2,7 +2,7 @@
 /**
  * api请求拦截中间件
  */
-export default () => {
+ module.exports = options => {
     // const skipExt = [ '.png', '.jpeg', '.jpg', '.ico', '.gif' ];
     return async function(ctx, next) {
         // 如果api请求，则走特殊逻辑
