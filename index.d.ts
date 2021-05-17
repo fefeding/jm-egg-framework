@@ -119,7 +119,14 @@ declare module 'egg' {
         /**
          * 检查当前api请求是否需要校验登录
          */
-        checkNeedLogin():boolean
+        checkNeedLogin(): boolean
+
+
+        /**
+         * 当请求api时，统一的处理函数
+         * @param next 中间件next函数
+         */
+        requestApi(next: any): Promise<any>
     }
 
     // 扩展你的配置

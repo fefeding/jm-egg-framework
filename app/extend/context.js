@@ -26,6 +26,8 @@ const ipadReg = /(iPad).*OS\s([\d_]+)/i;
 const ipodReg = /(iPod)(.*OS\s([\d_]+))?/i;
 // 移动设备
 const mobileReg = /\s+Mobile\s+/i;
+// 校验api路径规则的
+const apiReg = /^\/([^\/]+\/)?api\//i;
 
 module.exports =  {
 
@@ -100,27 +102,39 @@ module.exports =  {
     return wxReg.test(this.ua);
   },
 
-  /**
-   * 读取cookie
-   * @param {string} name cookie名称
-   */
-  getCookie(name) {
-    cookieOpt.domain = this.hostname;
-    return this.cookies.get(name, cookieOpt);
-  },
+    /**
+     * 当前客户端IP
+     */
+    get clientIP() {
+        if(this.request.ip) return this.request.ip;
 
-  /**
-   * 写cookie
-   * @param {string} name 
-   * @param {string} value 
-   * @param {cookieOpt} opt 
-   */
-  setCookie(name, value, opt) {
-      cookieOpt.domain = this.hostname;
-      opt = Object.assign(cookieOpt, opt||{});
-      
-      this.cookies.set(name, value, opt);
-  },
+        if(this.request && this.request.ips && this.request.ips.length) {
+            return this.request.ips[0];
+        }
+        return this.get('X-Forwarded-For') || '';
+    },
+
+    /**
+     * 读取cookie
+     * @param {string} name cookie名称
+     */
+    getCookie(name) {
+        cookieOpt.domain = this.hostname;
+        return this.cookies.get(name, cookieOpt);
+    },
+
+    /**
+     * 写cookie
+     * @param {string} name key
+     * @param {string} value  value
+     * @param {cookieOpt} opt  选项
+     */
+    setCookie(name, value, opt) {
+        cookieOpt.domain = this.hostname;
+        opt = Object.assign(cookieOpt, opt || {});
+
+        this.cookies.set(name, value, opt);
+    },
 
   /**
    * 获取api请求信息
@@ -129,30 +143,65 @@ module.exports =  {
   getApiInfo() {
       if(this.apiRequestPath) return this.apiRequestPath;
 
-      this.apiRequestPath = {
-          method: '',
-          path: '',
-          pathArray: [],
-          controller: null
-      };
+        this.apiRequestPath = {
+            method: '',
+            path: '',
+            pathArray: [],
+            controller: null,
+        };
 
-      // 只处理api请求
-      if(!/^\/api\//i.test(this.request.path)) {
-          return this.apiRequestPath;
-      }
-      // console.log('resolve ', this.request.path);
-      // 标记为api请求
-      this.isApi = true;
+        try {
+            // 只处理api请求
+            /*if (!/^\/api\//i.test(this.request.path)) {
+                return this.apiRequestPath;
+            }*/
+            // 标记为api请求   只要有api路径都认为是api请求
+            this.isApi = apiReg.test(this.request.path);
 
-      // api开头只是代理，真正访问的是后面
-      this.apiRequestPath.path = this.request.path.replace(/^\/api\//i, '').replace(/\/([^\/]+)$/, '');
-      this.apiRequestPath.method = RegExp.$1; // 这里截取的是方法名
-      this.apiRequestPath.pathArray = this.apiRequestPath.path.split('/');
-      
-      const controllerClass = require(`${this.app.baseDir}/app/controller/${this.apiRequestPath.path}`);
-      this.apiRequestPath.controller = new (controllerClass.default || controllerClass)(this);
-      return this.apiRequestPath;
-  },
+            this.apiRequestPath.prefix = RegExp.$1 || ''; // 截取项目路径前缀，有可能没有
+
+            // api开头只是代理，真正访问的是后面
+            this.apiRequestPath.path = this.request.path.replace(apiReg, '').replace(/\/([^\/]+)$/, '');
+            this.apiRequestPath.method = RegExp.$1; // 这里截取的是方法名
+            this.apiRequestPath.pathArray = this.apiRequestPath.path.split('/');
+
+            // this.apiRequestPath.controller = dotProp.get(this.app.controller, this.helper.normalMethodPath(this.apiRequestPath.path));
+
+
+            if(this.isApi) {
+                // 用require，在文件不存在时，会抛错
+                const controlerPath = `${this.app.baseDir}/app/controller/${this.apiRequestPath.path}`;
+                let controllerClass = require(controlerPath);
+
+                // 如果是函数，则执行它
+                if(typeof controllerClass === 'function' && Object.prototype.toString.call(controllerClass) === '[object Function]') {
+                    try {
+                        controllerClass = controllerClass(this.app);
+                    }
+                    catch(e) {
+                        // 有些版本的node  class  toString 也是 Function  。所以这里会报错
+                        //console.log(e);
+                    }
+                }
+
+                try {
+                    this.apiRequestPath.controller = new (controllerClass.default || controllerClass)(this);
+                }
+                catch(e) {
+                    // 又有些版本 class 是 object ，这里也会执行失败，我们就直接赋值了
+                    this.apiRequestPath.controller = controllerClass;
+                }
+
+                this.apiRequestPath.controller.ctx = this;
+                this.apiRequestPath.controller.service = this.service;
+                this.apiRequestPath.controller.app = this.app;
+            }
+        }
+        catch(ex) {
+            console.log(ex);
+        }
+        return this.apiRequestPath;
+    },
 
   /**
   * 检查当前api请求是否需要校验登录
@@ -175,4 +224,77 @@ module.exports =  {
      const isCheck = this.helper.decorators.getApiLogin(apiInfo.controller, apiInfo.method);
      return this.needLogin = (isCheck === false? false : true);
  },
+// api 请求
+    async requestApi() {
+        let result = {
+            ret: 0,
+            msg: '',
+        };
+        try {
+            const config = this.app.config.jvCommon || {};
+            const apiInfo = this.getApiInfo();
+
+            // 分割请求路径，最后为方法名
+            if (!apiInfo) {
+                throw Error(`Controller ${this.request.path} 不存在`);
+            }
+
+            if (!apiInfo.controller) {
+                throw Error(`Controller ${apiInfo.path} 不存在`);
+            }
+
+            console.log(`run controller ${apiInfo.path} method ${apiInfo.method}`);
+
+            if (!apiInfo.controller[apiInfo.method]) {
+                throw Error(`Controller ${apiInfo.path} 不存在方法${apiInfo.method}`);
+            }
+
+            // 检查是否需要校验token
+            // 如果需要但失败，会返回false
+            let tokenChecked = this.helper.checkApiToken(this, apiInfo.controller, apiInfo.method);
+            // 检验权限是否通过api允许
+            const permissionChecked = await this.helper.checkApiPermission(this, apiInfo.controller, apiInfo.method);
+            if (config.skipLoginCheck) {
+                tokenChecked = true;
+            }
+
+            if (tokenChecked === false) {
+                result.ret = 10002;
+                result.msg = 'check token fail';
+                this.status = 403;
+            } else if (permissionChecked === false) {
+                result.ret = 10003;
+                result.msg = 'permission deny';
+                this.status = 403;
+            } else {
+                // 收集请求参数，get post都支持
+                const params = Object.assign(Object.assign({}, this.request.query||{}), this.request.body||{});
+
+                const method = apiInfo.controller[apiInfo.method];
+
+                const data = await method.call(apiInfo.controller, this, params);
+                if (data) {
+                    if (typeof data ==='object' && 'ret' in data && 'msg' in data) {
+                        result = Object.assign(result, data);
+                    } else {
+                        result.data = data;
+                    }
+                } else if (this.body) { // 针对部分没有返回值，直接设body的情况，如返回二进制文件流。
+                    return;
+                }
+            }
+        } catch (e) {
+            this.logger.error(e);
+            console.log(e);
+
+            // 如果抛出的就是IApiResult 则直接返回
+            if (e && 'ret' in e && 'msg' in e) {
+                result = Object.assign(result, e);
+            } else {
+                result.ret = 10001;
+                result.msg = e.message;
+            }
+        }
+        this.body = result;
+    },
 };
