@@ -42,26 +42,26 @@ module.exports =  {
      * @param {string} propertyKey  需要校验的接口名字
      * @return {boolean} 无需校验或成功返回true，否则false
      */
-    checkApiToken(target, propertyKey) {
+    checkApiToken(ctx, target, propertyKey) {
         // 查看是否需要校验
         const isCheck = decorators.getApiToken(target, propertyKey);
         // 只要没指定false就校验
         if (isCheck !== false) {
             // 配置了启用鉴权
-            const options = this.ctx.app.config.apiAccess;
+            const options = ctx.app.config.apiAccess;
             if (!options || !options.enabled) {
                 console.log('未配置 apiAccess 跳过api token校验');
                 return true;
             }
             
-            let token = this.ctx.request.header.jmtoken || this.ctx.request.query.jmtoken;
-            if (!token && this.ctx.request.body && this.ctx.request.body.jmtoken) {
-                token = this.ctx.request.body.jmtoken;
+            let token = ctx.request.header.jmtoken || ctx.request.query.jmtoken;
+            if (!token && ctx.request.body && ctx.request.body.jmtoken) {
+                token = ctx.request.body.jmtoken;
             }
 
-            let timestamp = this.ctx.request.header.jmtimestamp || this.ctx.request.query.jmtimestamp;
-            if (!timestamp && this.ctx.request.body && this.ctx.request.body.jmtimestamp) {
-                timestamp = this.ctx.request.body.jmtimestamp;
+            let timestamp = ctx.request.header.jmtimestamp || ctx.request.query.jmtimestamp;
+            if (!timestamp && ctx.request.body && ctx.request.body.jmtimestamp) {
+                timestamp = ctx.request.body.jmtimestamp;
             }
 
             // 如果配置了超时，则判断是否超时
