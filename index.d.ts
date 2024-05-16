@@ -256,4 +256,4 @@ declare type apiDecorators = {
 /**
  * 通用装饰器
  */
-export const decorators: apiDecorators
+type decorators = apiDecorators;
