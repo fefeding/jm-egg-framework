@@ -1,11 +1,11 @@
-# jv-egg-framework
+# @fefeding/egg-framework
 基于egg框架的上层framework
 
 ## 插件使用指南
 在根目录`package.json`中,配置`egg.framework`  
 ```
   "egg": {
-    "framework": "jm-egg-framework"
+    "framework": "@fefeding/egg-framework"
   }
 ```  
 配置完成项目之后,安装依赖  

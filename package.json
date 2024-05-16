@@ -1,9 +1,13 @@
 {
+  "name": "@fefeding/egg-framework",
   "dependencies": {
     "egg": "^2.16.0",
     "egg-cache": "0.0.6",
-    "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.2.32"
+    "reflect-metadata": "^0.1.13"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "deprecated": false,
   "devDependencies": {
@@ -13,9 +17,8 @@
   "engines": {
     "node": ">=8.9.0"
   },
-  "name": "jm-egg-framework",
   "scripts": {
     "test": "egg-bin test"
   },
-  "version": "1.0.10"
+  "version": "1.0.1"
 }
