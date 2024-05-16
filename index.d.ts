@@ -253,7 +253,10 @@ declare type apiDecorators = {
     // 获取是否是req实例
     getReq(target: any): any;
 }
-/**
- * 通用装饰器
- */
-type decorators = apiDecorators;
+
+declare module '@fefeding/egg-framework' {
+    /**
+     * 通用装饰器
+     */
+    export const decorators: apiDecorators
+}
