@@ -195,12 +195,6 @@ declare module 'egg' {
     }
 }
 
-declare module 'jm-egg-framework' {
-    /**
-     * 通用装饰器
-     */
-    export const decorators: apiDecorators
-}
 
 /**
  * api 返回数据标准结构
@@ -246,7 +240,20 @@ declare type apiDecorators = {
      * @param target {Controller} 接口所在的controller
      * @param propertyKey 接口名
      */
-    getApiLogin(target: any, propertyKey: string): boolean
-}
+    getApiLogin(target: any, propertyKey: string): boolean// 参数是否必需
 
-//export = egg;
+    api(options: any): void;
+
+    // 获取api装饰对象
+    getApi(target: any): any;
+
+    // req对象实例
+    req(options: any): any;
+
+    // 获取是否是req实例
+    getReq(target: any): any;
+}
+/**
+ * 通用装饰器
+ */
+export const decorators: apiDecorators
