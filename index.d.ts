@@ -242,7 +242,7 @@ declare type apiDecorators = {
      */
     getApiLogin(target: any, propertyKey: string): boolean// 参数是否必需
 
-    api(options: any): void;
+    api(options: any): any;
 
     // 获取api装饰对象
     getApi(target: any): any;
