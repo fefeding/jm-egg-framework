@@ -1,14 +1,60 @@
 
 import 'egg';
 import 'egg-cache';
+import { AxiosRequestConfig, AxiosPromise, AxiosInstance } from "axios";
 //import BaseDalService from './app/service/dal/base';
 //import { ObjectType, BaseEntity, Connection, Repository, FindManyOptions, FindOneOptions } from 'typeorm';
+
+declare module "axios" {
+    interface AxiosInstance {
+        /**
+         * 这里当项目有部署目录时，会指定。用来请求当前项目接口的根路径
+         */
+        baseURL: string;
+
+        /**
+         * API请求通用方法
+         * @param data 请求参数
+         * @param options axios的请求参数，可以指定baseURL
+         */
+        requestApi<req, res>(
+            data: req,
+            options?: AxiosRequestConfig
+        ): Promise<res>;
+
+        /**
+         * 从请求model里获取url，并组合baseURL
+         * @param data 请求参数model
+         * @param options axios的请求参数，可以指定baseURL
+         */
+        getApiUrl<req>(data: req, options?: AxiosRequestConfig): string;
+    }
+}
 
 declare module 'egg' {    
 
     // 扩展 app
     interface Application {
-        
+        jmCache: {
+            /**
+             * 获取缓存值
+             * @param key 缓存健值
+             */
+            get(key: string): any;
+            /**
+             * 写入缓存
+             * @param key 健值
+             * @param value 缓存值
+             */
+            set(key: string, value: any): void;
+            /**
+             * 本地进程session缓存
+             */
+            session: {
+                get(id: string): Session;
+                set(id: string, session: Session): void;
+            };
+        };
     }
 
     // 扩展 context
@@ -166,12 +212,52 @@ declare module 'egg' {
          * @param {string} propertyKey  需要校验的接口名字
          * @return {boolean} 无需校验或成功返回true，否则false
          */
-        checkApiToken(ctx: Context, target: Controller, propertyKey: string): boolean
+        checkApiToken(ctx: Context, target: Controller, propertyKey: string): boolean        
+
+        /**
+         * 调用curl get表求
+         * @param url
+         * @param data
+         * @param headers
+         */
+        curlGet<req, res>(url: string, data?: req, headers?: any): Promise<res>;
+
+        /**
+         * 调用curl post表求
+         * @param url
+         * @param data
+         * @param headers
+         */
+        curlPost<req, res>(
+            url: string,
+            data?: req,
+            headers?: any
+        ): Promise<res>;
+
+        /**
+         * 对egg的curl二次封装，加入了代理配置能力，参考config.default.js
+         * @param url 请求地址
+         * @param option IRequestOption  参考egg的curl参数
+         */
+        curl<req, res>(
+            url: string | IRequestOption<req>,
+            option?: IRequestOption<req>
+        ): Promise<res>;
 
         /**
          * 公共通用装饰器
          */
-        decorators: apiDecorators
+        decorators: apiDecorators;
+
+        /**
+         * 请求基础服务平台
+         * @param data {req} 请求model
+         * @param option curl参数
+         */
+        requestBaseServer<req, rsp>(
+            data: req,
+            option?: IRequestOption<req>
+        ): Promise<rsp>;
     }
     
 

@@ -1,7 +1,8 @@
-const path = require('path');
+
 const egg = require('egg');
 
 const decorators = require('./lib/decorator');
+const axios = require("./lib/axios.js");
 
 
 const Application = require('./lib/application');
@@ -16,3 +17,4 @@ exports.Application = Application;
 exports.Agent = Agent;
 
 exports.decorators = decorators;
+exports.axios = axios;
