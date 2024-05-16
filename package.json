@@ -1,9 +1,10 @@
 {
   "name": "@fefeding/egg-framework",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "dependencies": {
     "egg": "latest",
     "egg-cache": "latest",
+    "js-cookie": "^3.0.5",
     "reflect-metadata": "latest"
   },
   "publishConfig": {
