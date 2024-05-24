@@ -18,7 +18,7 @@ module.exports = appInfo => {
   };
 
   config.siteFile = {
-    '/favicon.ico': fs.readFileSync(path.join(appInfo.baseDir, 'app/web/asset/images/favicon.ico'))
+    //'/favicon.ico': fs.readFileSync(path.join(appInfo.baseDir, 'app/web/asset/images/favicon.ico'))
   };
 
   config.static = {
